@@ -5198,19 +5198,48 @@ async function renderOverviewPage() {
           : (metaPurchases > 0 ? '100.0' : '0.0');
         const overAttributionRateDisplay = parseFloat(overAttributionRate) >= 0 ? `+${overAttributionRate}%` : `${overAttributionRate}%`;
 
+        // Determine creative format badge, ID, concept, and preview thumbnail
+        const nameUpper = (c.ad_name || '').toUpperCase();
+        let formatBadge = `<span style="background: #eef2ff; color: #4338ca; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; border: 1px solid #c7d2fe;">🖼️ Carousel</span>`;
+        let conceptTag = 'Dynamic Split Screen';
+        let creativeId = 'cr_aero_apex_01';
+        let thumbUrl = c.thumbnail_url || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&auto=format&fit=crop&q=80';
+
+        if (nameUpper.includes('TEE') || nameUpper.includes('CARBON') || nameUpper.includes('UGC')) {
+          formatBadge = `<span style="background: #fdf2f8; color: #db2777; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; border: 1px solid #fbcfe8;">🎥 UGC Video</span>`;
+          conceptTag = '30-Day Wear Test';
+          creativeId = 'cr_aero_tee_02';
+          thumbUrl = c.thumbnail_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=200&auto=format&fit=crop&q=80';
+        } else if (nameUpper.includes('SOCKS') || nameUpper.includes('LAL') || nameUpper.includes('REEL')) {
+          formatBadge = `<span style="background: #f0fdf4; color: #16a34a; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; border: 1px solid #bbf7d0;">📱 Macro Reel</span>`;
+          conceptTag = 'Anti-Blister Macro Zoom';
+          creativeId = 'cr_aero_socks_03';
+          thumbUrl = c.thumbnail_url || 'https://images.unsplash.com/photo-1586350977771-b3b0abd50c82?w=200&auto=format&fit=crop&q=80';
+        }
+
         return `
-          <div style="background: #ffffff; border-radius: 14px; padding: 10px 20px; color: #0f172a; border: none; box-shadow: none; position: relative; overflow: hidden; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+          <div style="background: #ffffff; border-radius: 14px; padding: 12px 20px; color: #0f172a; border: none; box-shadow: none; position: relative; overflow: hidden; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
             
-            <!-- Left Column: #1 Rank Badge & Ad Name -->
-            <div style="display: flex; align-items: center; gap: 14px; flex: 1; min-width: 220px; z-index: 1;">
-              <div style="font-size: 15px; font-weight: 700; color: #4338ca; background: #eef2ff; border: none; padding: 5px 12px; border-radius: 8px; flex-shrink: 0;">
+            <!-- Left Column: #1 Rank Badge, Visual Thumbnail & Creative Info -->
+            <div style="display: flex; align-items: center; gap: 14px; flex: 1.2; min-width: 280px; z-index: 1;">
+              <div style="font-size: 15px; font-weight: 700; color: #4338ca; background: #eef2ff; border: none; padding: 6px 12px; border-radius: 8px; flex-shrink: 0;">
                 #${idx + 1}
               </div>
-              <div>
-                <h2 style="font-size: 15px; font-weight: 600; color: #0f172a; margin: 0; word-break: break-word;">
+              <div style="width: 52px; height: 52px; border-radius: 10px; overflow: hidden; background: #f8fafc; border: 1px solid #e2e8f0; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: center;">
+                <img src="${thumbUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="Creative Thumbnail" onerror="this.src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&auto=format&fit=crop&q=80';">
+              </div>
+              <div style="min-width: 0;">
+                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 3px;">
+                  ${formatBadge}
+                  <span style="font-size: 10.5px; font-family: monospace; color: #64748b;">${creativeId}</span>
+                </div>
+                <h2 style="font-size: 14.5px; font-weight: 600; color: #0f172a; margin: 0; word-break: break-word; line-height: 1.3;">
                   ${c.ad_name}
                 </h2>
-                ${c.campaign_name ? `<div style="font-size: 10.5px; color: #64748b; margin-top: 2px;">Campaign: <span style="font-family: monospace; font-weight: 500;">${c.campaign_name}</span></div>` : ''}
+                <div style="font-size: 11px; color: #64748b; margin-top: 3px; display: flex; align-items: center; gap: 6px;">
+                  <span>Concept:</span>
+                  <span style="font-weight: 500; color: #334155;">${conceptTag}</span>
+                </div>
               </div>
             </div>
 
