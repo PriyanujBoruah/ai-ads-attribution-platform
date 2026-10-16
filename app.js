@@ -3262,22 +3262,34 @@ async function updateDashboardBreakdowns(results) {
     const nonIncrementalSales = Math.max(0, totalGross - totalCausalSales - totalDiscount);
     const totalOpsCosts = totalCOGS + totalProcessorFees + totalShipping;
 
-    document.getElementById('wf-gross-val').innerText = formatGBP(totalGross);
-    document.getElementById('wf-promo-val').innerText = `-${formatGBP(totalDiscount)}`;
-    document.getElementById('wf-non-incr-val').innerText = `-${formatGBP(nonIncrementalSales)}`;
-    document.getElementById('wf-returns-val').innerText = `-${formatGBP(totalRefunds)}`;
-    document.getElementById('wf-costs-val').innerText = `-${formatGBP(totalOpsCosts)}`;
-    document.getElementById('wf-net-val').innerText = formatGBP(totalNetProfit);
+    const elWfGross = document.getElementById('wf-gross-val');
+    if (elWfGross) elWfGross.innerText = formatGBP(totalGross);
+    const elWfPromo = document.getElementById('wf-promo-val');
+    if (elWfPromo) elWfPromo.innerText = `-${formatGBP(totalDiscount)}`;
+    const elWfNonIncr = document.getElementById('wf-non-incr-val');
+    if (elWfNonIncr) elWfNonIncr.innerText = `-${formatGBP(nonIncrementalSales)}`;
+    const elWfReturns = document.getElementById('wf-returns-val');
+    if (elWfReturns) elWfReturns.innerText = `-${formatGBP(totalRefunds)}`;
+    const elWfCosts = document.getElementById('wf-costs-val');
+    if (elWfCosts) elWfCosts.innerText = `-${formatGBP(totalOpsCosts)}`;
+    const elWfNet = document.getElementById('wf-net-val');
+    if (elWfNet) elWfNet.innerText = formatGBP(totalNetProfit);
 
     // Calculate percentages relative to Gross Checkout Sales
     const getPercent = (val) => totalGross > 0 ? Math.min(100, (val / totalGross) * 100) : 0;
     
-    document.getElementById('wf-gross-bar').style.width = '100%';
-    document.getElementById('wf-promo-bar').style.width = `${getPercent(totalDiscount)}%`;
-    document.getElementById('wf-non-incr-bar').style.width = `${getPercent(nonIncrementalSales)}%`;
-    document.getElementById('wf-returns-bar').style.width = `${getPercent(totalRefunds)}%`;
-    document.getElementById('wf-costs-bar').style.width = `${getPercent(totalOpsCosts)}%`;
-    document.getElementById('wf-net-bar').style.width = `${getPercent(totalNetProfit)}%`;
+    const elWfGrossBar = document.getElementById('wf-gross-bar');
+    if (elWfGrossBar) elWfGrossBar.style.width = '100%';
+    const elWfPromoBar = document.getElementById('wf-promo-bar');
+    if (elWfPromoBar) elWfPromoBar.style.width = `${getPercent(totalDiscount)}%`;
+    const elWfNonIncrBar = document.getElementById('wf-non-incr-bar');
+    if (elWfNonIncrBar) elWfNonIncrBar.style.width = `${getPercent(nonIncrementalSales)}%`;
+    const elWfReturnsBar = document.getElementById('wf-returns-bar');
+    if (elWfReturnsBar) elWfReturnsBar.style.width = `${getPercent(totalRefunds)}%`;
+    const elWfCostsBar = document.getElementById('wf-costs-bar');
+    if (elWfCostsBar) elWfCostsBar.style.width = `${getPercent(totalOpsCosts)}%`;
+    const elWfNetBar = document.getElementById('wf-net-bar');
+    if (elWfNetBar) elWfNetBar.style.width = `${getPercent(totalNetProfit)}%`;
 
     // Update Portfolio Executive Summary card metrics
     await updateSummarySection(results);
