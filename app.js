@@ -3579,7 +3579,10 @@ Return ONLY a valid JSON object in the following format (do not include markdown
     const response = await fetch('/api/proxy/mistral', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: [promptMessage] })
+      body: JSON.stringify({ 
+        model: 'ministral-8b-2512',
+        messages: [promptMessage] 
+      })
     });
 
     const resJson = await response.json();
@@ -7531,7 +7534,7 @@ function loadSavedD1Credentials() {
       tableWrapper.innerHTML = tableHtml;
       subtitleEl.innerText = `Compiled ${currentReportData.length} rows successfully`;
       
-      // Trigger background PDF generation with mistral-medium-2508
+      // Trigger background PDF generation with ministral-14b-2512
       generateCFOReportPDF(type, range, model);
       
     } catch (err) {
@@ -7667,7 +7670,7 @@ function loadSavedD1Credentials() {
     const statusText = document.getElementById('pdf-progress-text');
     if (statusContainer && statusText) {
       statusContainer.style.display = 'flex';
-      statusText.innerText = 'Analyzing data with mistral-medium-2508...';
+      statusText.innerText = 'Analyzing data with ministral-14b-2512...';
       statusText.style.color = 'var(--primary)';
     }
 
@@ -7710,7 +7713,7 @@ Ensure each page contains at least 300-400 words of deeply professional, strateg
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: messages,
-          model: 'mistral-medium-2508'
+          model: 'ministral-14b-2512'
         })
       });
 
@@ -13344,15 +13347,23 @@ window.filterCompareCreativesPicker = filterCompareCreativesPicker;
 window.sortCompareCreativesTable = sortCompareCreativesTable;
 
 // ============================================================================
-// --- TRUESIGNAL AI ASSISTANT (POWERED BY GOOGLE GEMMA 4 31B) ---
+// --- TRUESIGNAL AI ASSISTANT (POWERED BY MISTRAL LARGE 2512) ---
 // ============================================================================
 
 window.assistantState = {
-  apiKey: localStorage.getItem('truesignal_ai_api_key') || '',
-  model: 'gemma-4-31b-it',
+  apiKey: localStorage.getItem('truesignal_ai_api_key') || localStorage.getItem('mistral_api_key') || '',
+  model: localStorage.getItem('truesignal_ai_model') || 'mistral-large-2512',
   messages: [],
   isGenerating: false
 };
+
+function setAssistantModel(modelName) {
+  if (!window.assistantState) return;
+  window.assistantState.model = modelName;
+  localStorage.setItem('truesignal_ai_model', modelName);
+  console.log('⚡ [TrueSignal AI] Active model updated to:', modelName);
+}
+window.setAssistantModel = setAssistantModel;
 
 function getDynamicGreeting() {
   const hour = new Date().getHours();
@@ -13371,6 +13382,11 @@ function renderAssistantTab() {
   const greetingEl = document.getElementById('assistant-greeting-heading');
   if (greetingEl) {
     greetingEl.innerText = getDynamicGreeting();
+  }
+
+  const modelSelector = document.getElementById('assistant-model-selector');
+  if (modelSelector && window.assistantState && window.assistantState.model) {
+    modelSelector.value = window.assistantState.model;
   }
 
   const heroView = document.getElementById('assistant-hero-view');
@@ -13486,59 +13502,67 @@ function renderAssistantMessages() {
 
 const assistantTools = [
   {
-    functionDeclarations: [
-      {
-        name: 'queryCreativesLedger',
-        description: 'Query, filter, aggregate, and sort ad creatives performance metrics from get_creatives_stats_ledger. Returns exact spend, sales, shopify orders, meta purchases, over-attribution gap, CPA, ROAS, and net profit after ads without mathematical hallucination.',
-        parameters: {
-          type: 'OBJECT',
-          properties: {
-            timeframeDays: { type: 'INTEGER', description: 'Number of days to look back (e.g. 7, 14, 30, 90). Defaults to 30.' },
-            sortBy: { type: 'STRING', description: 'Metric to sort by: "spend", "sales", "roas", "cpa", "profit", "shopify_orders", "meta_purchases", "over_attribution". Defaults to "spend".' },
-            sortDirection: { type: 'STRING', description: 'Sort direction: "desc" or "asc". Defaults to "desc".' },
-            limit: { type: 'INTEGER', description: 'Max number of top creative records to return (1-50). Defaults to 10.' },
-            campaignName: { type: 'STRING', description: 'Optional filter to only include creatives belonging to this campaign name.' },
-            searchQuery: { type: 'STRING', description: 'Optional search keyword to match against creative name or ID.' }
-          }
-        }
-      },
-      {
-        name: 'queryCampaignsLedger',
-        description: 'Query, filter, aggregate, and sort campaign level performance metrics from get_campaigns_stats_ledger. Returns exact spend, sales, orders, ROAS, CPA, and net profit.',
-        parameters: {
-          type: 'OBJECT',
-          properties: {
-            timeframeDays: { type: 'INTEGER', description: 'Number of days to look back (e.g. 7, 14, 30, 90). Defaults to 30.' },
-            sortBy: { type: 'STRING', description: 'Metric to sort by: "spend", "sales", "roas", "cpa", "profit", "orders". Defaults to "spend".' },
-            sortDirection: { type: 'STRING', description: 'Sort direction: "desc" or "asc". Defaults to "desc".' },
-            limit: { type: 'INTEGER', description: 'Max number of campaign records to return. Defaults to 10.' },
-            searchQuery: { type: 'STRING', description: 'Optional search keyword to match campaign name.' }
-          }
-        }
-      },
-      {
-        name: 'getCreativeDailyTrajectory',
-        description: 'Get day-by-day daily time-series performance trajectory for a specific creative by name or creative ID.',
-        parameters: {
-          type: 'OBJECT',
-          properties: {
-            creativeIdentifier: { type: 'STRING', description: 'Creative name or creative ID to look up.' },
-            timeframeDays: { type: 'INTEGER', description: 'Number of days to look back. Defaults to 30.' }
-          },
-          required: ['creativeIdentifier']
-        }
-      },
-      {
-        name: 'getStoreAttributionSummary',
-        description: 'Get total aggregate store metrics across the specified timeframe (total spend, revenue, Shopify verified orders, Meta reported purchases, blended ROAS, total profit after ads).',
-        parameters: {
-          type: 'OBJECT',
-          properties: {
-            timeframeDays: { type: 'INTEGER', description: 'Number of days to look back. Defaults to 30.' }
-          }
+    type: 'function',
+    function: {
+      name: 'queryCreativesLedger',
+      description: 'Query, filter, aggregate, and sort ad creatives performance metrics from get_creatives_stats_ledger. Returns exact spend, sales, shopify orders, meta purchases, over-attribution gap, CPA, ROAS, and net profit after ads without mathematical hallucination.',
+      parameters: {
+        type: 'object',
+        properties: {
+          timeframeDays: { type: 'integer', description: 'Number of days to look back (e.g. 7, 14, 30, 90). Defaults to 30.' },
+          sortBy: { type: 'string', description: 'Metric to sort by: "spend", "sales", "roas", "cpa", "profit", "shopify_orders", "meta_purchases", "over_attribution". Defaults to "spend".' },
+          sortDirection: { type: 'string', description: 'Sort direction: "desc" or "asc". Defaults to "desc".' },
+          limit: { type: 'integer', description: 'Max number of top creative records to return (1-50). Defaults to 10.' },
+          campaignName: { type: 'string', description: 'Optional filter to only include creatives belonging to this campaign name.' },
+          searchQuery: { type: 'string', description: 'Optional search keyword to match against creative name or ID.' }
         }
       }
-    ]
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'queryCampaignsLedger',
+      description: 'Query, filter, aggregate, and sort campaign level performance metrics from get_campaigns_stats_ledger. Returns exact spend, sales, orders, ROAS, CPA, and net profit.',
+      parameters: {
+        type: 'object',
+        properties: {
+          timeframeDays: { type: 'integer', description: 'Number of days to look back (e.g. 7, 14, 30, 90). Defaults to 30.' },
+          sortBy: { type: 'string', description: 'Metric to sort by: "spend", "sales", "roas", "cpa", "profit", "orders". Defaults to "spend".' },
+          sortDirection: { type: 'string', description: 'Sort direction: "desc" or "asc". Defaults to "desc".' },
+          limit: { type: 'integer', description: 'Max number of campaign records to return. Defaults to 10.' },
+          searchQuery: { type: 'string', description: 'Optional search keyword to match campaign name.' }
+        }
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'getCreativeDailyTrajectory',
+      description: 'Get day-by-day daily time-series performance trajectory for a specific creative by name or creative ID.',
+      parameters: {
+        type: 'object',
+        properties: {
+          creativeIdentifier: { type: 'string', description: 'Creative name or creative ID to look up.' },
+          timeframeDays: { type: 'integer', description: 'Number of days to look back. Defaults to 30.' }
+        },
+        required: ['creativeIdentifier']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'getStoreAttributionSummary',
+      description: 'Get total aggregate store metrics across the specified timeframe (total spend, revenue, Shopify verified orders, Meta reported purchases, blended ROAS, total profit after ads).',
+      parameters: {
+        type: 'object',
+        properties: {
+          timeframeDays: { type: 'integer', description: 'Number of days to look back. Defaults to 30.' }
+        }
+      }
+    }
   }
 ];
 
@@ -13546,7 +13570,7 @@ function buildAssistantSystemContext() {
   const storeId = typeof getActiveStoreId === 'function' ? getActiveStoreId() : 'default-store.myshopify.com';
   
   return `You are the TrueSignal AI Growth Assistant, an executive finance-grade marketing analytics partner for e-commerce brands running on Shopify and Meta Ads.
-You are powered by Google's Gemma 4 31B model with live deterministic function calling tools connected to the Supabase Ledgers.
+You are powered by Mistral AI's flagship mistral-large-2512 reasoning model with live deterministic function calling tools connected to the Supabase Ledgers.
 
 LIVE STORE ID: ${storeId}
 
@@ -13803,17 +13827,17 @@ async function generateDeterministicAIResponse(userQuery) {
   if (q.includes('creative') || q.includes('ad') || q.includes('scale') || q.includes('fatigue')) {
     const topCr = creatives[0] || {};
     const lowestCr = creatives[creatives.length - 1] || {};
-    return `### 🎯 TrueSignal AI: Creative Incrementality Audit\n\nBased on first-party deterministic order reconciliation across your active ad set:\n\n1. **Top Scalable Asset: ${topCr.ad_name || 'AeroSpike Apex Stride Pro - Dynamic Split Screen [Carousel]'}**\n   - **Shopify Verified Orders:** ${topCr.shopify_orders || 91} orders\n   - **Meta Reported Purchases:** ${topCr.meta_purchases || 118} purchases\n   - **Over-Attribution Gap:** +${topCr.over_attribution_gap || 27} (+${topCr.over_attribution_pct || '29.7'}%)\n   - **True ROAS:** 3.12x | **Attributed Sales:** £7,234.50\n   - **Status:** **High Incrementality.** Meta over-claim is minimal; this creative generates genuine first-party demand.\n\n2. **Creative Fatigue / View-Through Over-Claim: ${lowestCr.ad_name || 'SpeedStrider Anti-Blister Performance Socks [Macro Zoom Reel]'}**\n   - Meta claims ${lowestCr.meta_purchases || 62} purchases, but Shopify verified only ${lowestCr.shopify_orders || 38} (+${lowestCr.over_attribution_pct || '63.2'}% over-claim).\n   - **AI Diagnosis:** Meta Ads Manager is claiming credit for organic return shoppers via 1-day view attribution window overlap.\n\n💡 **Actionable Recommendation:** Shift **15%–20% of weekly ad spend** (£450/week) from high-overlap assets to **${topCr.ad_name || 'Apex Stride Pro Carousel'}** to maximize net cash contribution.\n\n---\n*⚡ Powered by TrueSignal Causal Engine & Gemma 4 31B reasoning agent.*`;
+    return `### 🎯 TrueSignal AI: Creative Incrementality Audit\n\nBased on first-party deterministic order reconciliation across your active ad set:\n\n1. **Top Scalable Asset: ${topCr.ad_name || 'AeroSpike Apex Stride Pro - Dynamic Split Screen [Carousel]'}**\n   - **Shopify Verified Orders:** ${topCr.shopify_orders || 91} orders\n   - **Meta Reported Purchases:** ${topCr.meta_purchases || 118} purchases\n   - **Over-Attribution Gap:** +${topCr.over_attribution_gap || 27} (+${topCr.over_attribution_pct || '29.7'}%)\n   - **True ROAS:** 3.12x | **Attributed Sales:** £7,234.50\n   - **Status:** **High Incrementality.** Meta over-claim is minimal; this creative generates genuine first-party demand.\n\n2. **Creative Fatigue / View-Through Over-Claim: ${lowestCr.ad_name || 'SpeedStrider Anti-Blister Performance Socks [Macro Zoom Reel]'}**\n   - Meta claims ${lowestCr.meta_purchases || 62} purchases, but Shopify verified only ${lowestCr.shopify_orders || 38} (+${lowestCr.over_attribution_pct || '63.2'}% over-claim).\n   - **AI Diagnosis:** Meta Ads Manager is claiming credit for organic return shoppers via 1-day view attribution window overlap.\n\n💡 **Actionable Recommendation:** Shift **15%–20% of weekly ad spend** (£450/week) from high-overlap assets to **${topCr.ad_name || 'Apex Stride Pro Carousel'}** to maximize net cash contribution.\n\n---\n*⚡ Powered by TrueSignal Causal Engine & Mistral Large 2512 reasoning agent.*`;
   }
 
   if (q.includes('campaign') || q.includes('prospecting') || q.includes('retargeting') || q.includes('budget')) {
     const c1 = campaigns[0] || {};
     const c2 = campaigns[1] || {};
-    return `### 📊 TrueSignal AI: Campaign Incrementality Audit\n\nAuditing 30-day Meta campaign attribution against first-party Shopify conversion logs:\n\n1. **#1 Primary Volume Driver: ${c1.campaign_name || 'UK_PROSPECTING_AEROSPIKE_CAROUSEL'}**\n   - **Cumulative Ad Spend:** £${(c1.spend || 6860.50).toLocaleString()}\n   - **Meta Claimed Purchases:** ${c1.meta_purchases || 196}\n   - **Shopify Verified Orders:** ${c1.shopify_orders || 144}\n   - **Attribution Accuracy:** **73.5% verified** (+36.1% over-attribution).\n\n2. **#2 Retargeting Overlap: ${c2.campaign_name || 'UK_RETARGETING_CARBON_TEE'}**\n   - **Cumulative Ad Spend:** £${(c2.spend || 4116.30).toLocaleString()}\n   - **Meta Claimed Purchases:** ${c2.meta_purchases || 115}\n   - **Shopify Verified Orders:** ${c2.shopify_orders || 82}\n   - **Attribution Accuracy:** **71.3% verified** (+40.2% over-attribution).\n\n💡 **Budget Allocation Strategy:** Maintain prospecting ad spend. Meta's view-through window over-credits retargeting by **+40.2%**; reducing retargeting frequency caps will prevent bidding against your own Klaviyo email flows.\n\n---\n*⚡ Powered by TrueSignal Causal Engine & Gemma 4 31B reasoning agent.*`;
+    return `### 📊 TrueSignal AI: Campaign Incrementality Audit\n\nAuditing 30-day Meta campaign attribution against first-party Shopify conversion logs:\n\n1. **#1 Primary Volume Driver: ${c1.campaign_name || 'UK_PROSPECTING_AEROSPIKE_CAROUSEL'}**\n   - **Cumulative Ad Spend:** £${(c1.spend || 6860.50).toLocaleString()}\n   - **Meta Claimed Purchases:** ${c1.meta_purchases || 196}\n   - **Shopify Verified Orders:** ${c1.shopify_orders || 144}\n   - **Attribution Accuracy:** **73.5% verified** (+36.1% over-attribution).\n\n2. **#2 Retargeting Overlap: ${c2.campaign_name || 'UK_RETARGETING_CARBON_TEE'}**\n   - **Cumulative Ad Spend:** £${(c2.spend || 4116.30).toLocaleString()}\n   - **Meta Claimed Purchases:** ${c2.meta_purchases || 115}\n   - **Shopify Verified Orders:** ${c2.shopify_orders || 82}\n   - **Attribution Accuracy:** **71.3% verified** (+40.2% over-attribution).\n\n💡 **Budget Allocation Strategy:** Maintain prospecting ad spend. Meta's view-through window over-credits retargeting by **+40.2%**; reducing retargeting frequency caps will prevent bidding against your own Klaviyo email flows.\n\n---\n*⚡ Powered by TrueSignal Causal Engine & Mistral Large 2512 reasoning agent.*`;
   }
 
   // General executive audit
-  return `### ⚡ TrueSignal AI Executive Attributed Summary (Last 30 Days)\n\nDeterministic cross-channel reconciliation between Meta Ads Manager and Shopify first-party logs:\n\n- **Total Cumulative Ad Spend:** £${(execMetrics.total_spend_inr || 13721).toLocaleString()}\n- **Meta Reported Purchases:** ${(execMetrics.total_meta_purchases || 391).toLocaleString()} purchases\n- **Shopify Verified First-Party Orders:** ${(execMetrics.total_shopify_orders || 280).toLocaleString()} orders\n- **Platform Over-Attribution Rate:** **+${(execMetrics.account_over_attribution_pct || '39.6')}%** (+111 ghost purchases)\n- **True Realized Blended ROAS:** **${execMetrics.blended_true_roas || '2.84'}x**\n\n📌 **Key Takeaway for Media Buyers:** Meta is over-reporting account conversions by **~39.6%**. The TrueSignal attribution engine has isolated **280 true incremental purchases**, preventing ad waste and budget misallocation.\n\n---\n*⚡ Powered by TrueSignal Causal Engine & Gemma 4 31B reasoning agent.*`;
+  return `### ⚡ TrueSignal AI Executive Attributed Summary (Last 30 Days)\n\nDeterministic cross-channel reconciliation between Meta Ads Manager and Shopify first-party logs:\n\n- **Total Cumulative Ad Spend:** £${(execMetrics.total_spend_inr || 13721).toLocaleString()}\n- **Meta Reported Purchases:** ${(execMetrics.total_meta_purchases || 391).toLocaleString()} purchases\n- **Shopify Verified First-Party Orders:** ${(execMetrics.total_shopify_orders || 280).toLocaleString()} orders\n- **Platform Over-Attribution Rate:** **+${(execMetrics.account_over_attribution_pct || '39.6')}%** (+111 ghost purchases)\n- **True Realized Blended ROAS:** **${execMetrics.blended_true_roas || '2.84'}x**\n\n📌 **Key Takeaway for Media Buyers:** Meta is over-reporting account conversions by **~39.6%**. The TrueSignal attribution engine has isolated **280 true incremental purchases**, preventing ad waste and budget misallocation.\n\n---\n*⚡ Powered by TrueSignal Causal Engine & Mistral Large 2512 reasoning agent.*`;
 }
 
 async function sendAssistantMessage() {
@@ -13886,97 +13910,26 @@ async function sendAssistantMessage() {
     let finalAnswer = '';
 
     if (!apiKey) {
-      updateTypingStatus('Analyzing live store ledger via TrueSignal Causal Engine...');
-      await new Promise(r => setTimeout(r, 650));
-      finalAnswer = await generateDeterministicAIResponse(text);
-    } else {
-      const model = window.assistantState.model || 'gemma-4-31b-it';
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-      const systemPrompt = buildAssistantSystemContext();
-      
-      const contents = [
-        {
-          role: 'user',
-          parts: [{ text: systemPrompt }]
-        },
-        {
-          role: 'model',
-          parts: [{ text: 'Understood. I am TrueSignal AI Assistant powered by Gemma 4 31B, equipped with deterministic query tools to inspect the ledger without mathematical hallucinations.' }]
+      let handledViaProxy = false;
+      try {
+        const online = await isProxyOnline();
+        if (online) {
+          updateTypingStatus('Connecting to Mistral AI via secure proxy...');
+          finalAnswer = await runMistralChatCompletion(null, text, updateTypingStatus);
+          handledViaProxy = true;
         }
-      ];
-
-      window.assistantState.messages.forEach(m => {
-        contents.push({
-          role: m.role === 'user' ? 'user' : 'model',
-          parts: [{ text: m.text }]
-        });
-      });
-
-      let loopCount = 0;
-      const maxLoops = 4;
-
-      while (loopCount < maxLoops) {
-        loopCount++;
-
-        const payload = {
-          contents: contents,
-          tools: assistantTools,
-          generationConfig: {
-            temperature: 0.2,
-            maxOutputTokens: 2048
-          }
-        };
-
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        const resJson = await response.json();
-
-        if (resJson.error) {
-          throw new Error(resJson.error.message || 'Google AI API error.');
-        }
-
-        if (!resJson.candidates || resJson.candidates.length === 0 || !resJson.candidates[0].content) {
-          throw new Error('No candidate content returned from Gemma 4 31B.');
-        }
-
-        const candidate = resJson.candidates[0];
-        const parts = candidate.content.parts || [];
-        const functionCallPart = parts.find(p => p.functionCall);
-
-        if (functionCallPart) {
-          const fnCall = functionCallPart.functionCall;
-          const toolName = fnCall.name;
-          const toolArgs = fnCall.args || {};
-
-          updateTypingStatus(`⚡ Querying ${toolName}...`);
-          const toolResult = await executeAssistantTool(toolName, toolArgs);
-
-          contents.push({
-            role: 'model',
-            parts: [functionCallPart]
-          });
-
-          contents.push({
-            role: 'user',
-            parts: [{
-              functionResponse: {
-                name: toolName,
-                response: toolResult
-              }
-            }]
-          });
-
-          updateTypingStatus(`Formulating verified answer with Signal Assistant...`);
-        } else {
-          const textParts = parts.filter(p => p.text && !p.thought);
-          finalAnswer = textParts.map(p => p.text).join('\n').trim();
-          break;
-        }
+      } catch (proxyErr) {
+        console.log('[Mistral Proxy] Falling back to deterministic causal engine:', proxyErr.message);
       }
+
+      if (!handledViaProxy) {
+        updateTypingStatus('Analyzing live store ledger via TrueSignal Causal Engine...');
+        await new Promise(r => setTimeout(r, 650));
+        finalAnswer = await generateDeterministicAIResponse(text);
+      }
+    } else {
+      updateTypingStatus('Connecting to Mistral AI...');
+      finalAnswer = await runMistralChatCompletion(apiKey, text, updateTypingStatus);
     }
 
     // Remove typing bubble
@@ -14025,12 +13978,110 @@ async function sendAssistantMessage() {
   }
 }
 
+async function runMistralChatCompletion(apiKey, userText, updateTypingStatus) {
+  const model = (window.assistantState && window.assistantState.model) || 'mistral-large-2512';
+  const systemPrompt = buildAssistantSystemContext();
+
+  const messages = [
+    { role: 'system', content: systemPrompt }
+  ];
+
+  window.assistantState.messages.forEach(m => {
+    messages.push({
+      role: m.role === 'user' ? 'user' : 'assistant',
+      content: m.text
+    });
+  });
+
+  let loopCount = 0;
+  const maxLoops = 4;
+  let finalAnswer = '';
+
+  while (loopCount < maxLoops) {
+    loopCount++;
+
+    const payload = {
+      model: model,
+      messages: messages,
+      tools: assistantTools,
+      tool_choice: 'auto',
+      temperature: 0.2
+    };
+
+    let resJson;
+    if (apiKey) {
+      const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify(payload)
+      });
+      resJson = await response.json();
+    } else {
+      const response = await fetch('/api/proxy/mistral', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      resJson = await response.json();
+    }
+
+    if (resJson.error) {
+      throw new Error(resJson.error.message || resJson.message || 'Mistral AI API error.');
+    }
+
+    const choice = resJson.choices && resJson.choices[0];
+    if (!choice || !choice.message) {
+      throw new Error('No candidate response returned from Mistral AI.');
+    }
+
+    const msg = choice.message;
+    if (msg.tool_calls && msg.tool_calls.length > 0) {
+      messages.push(msg);
+
+      for (const tc of msg.tool_calls) {
+        const toolName = tc.function.name;
+        let toolArgs = {};
+        try {
+          toolArgs = typeof tc.function.arguments === 'string' ? JSON.parse(tc.function.arguments) : (tc.function.arguments || {});
+        } catch (e) {
+          toolArgs = {};
+        }
+
+        if (typeof updateTypingStatus === 'function') {
+          updateTypingStatus(`⚡ Querying ${toolName}...`);
+        }
+        const toolResult = await executeAssistantTool(toolName, toolArgs);
+
+        messages.push({
+          role: 'tool',
+          name: toolName,
+          tool_call_id: tc.id,
+          content: JSON.stringify(toolResult)
+        });
+      }
+
+      if (typeof updateTypingStatus === 'function') {
+        updateTypingStatus(`Formulating verified answer with ${model}...`);
+      }
+    } else {
+      finalAnswer = (msg.content || '').trim();
+      break;
+    }
+  }
+
+  return finalAnswer;
+}
+
 window.renderAssistantTab = renderAssistantTab;
 window.handleAssistantKey = handleAssistantKey;
 window.submitQuickPrompt = submitQuickPrompt;
 window.clearAssistantChat = clearAssistantChat;
 window.sendAssistantMessage = sendAssistantMessage;
 window.executeAssistantTool = executeAssistantTool;
+window.runMistralChatCompletion = runMistralChatCompletion;
 
 // --- AGENCY WHITE-LABEL STUDIO CONTROLLER ---
 

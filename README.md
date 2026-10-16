@@ -6,7 +6,7 @@
 
 ## 🚀 Key Highlights for Acquirers & AI Investors
 
-* **🤖 Autonomous AI Marketing Copilot:** Embedded LLM reasoning agent (powered by Google Gemma 4 31B and local deterministic tool-calling) that performs natural language audits, causal ROAS analysis, ad fatigue detection, and automated budget reallocation recommendations.
+* **🤖 Autonomous AI Marketing Copilot:** Embedded LLM reasoning agent powered by **Mistral Large (`mistral-large-2512`)**, **Codestral (`codestral-2508`)**, and lightweight edge models (**`ministral-14b-2512`** & **`ministral-8b-2512`**) with agentic function calling for natural language audits, causal ROAS analysis, ad fatigue detection, and automated budget reallocation recommendations.
 * **🛠️ Agentic Tool-Calling Schema:** Includes dedicated analytical tools (`query_creatives_performance`, `query_campaign_attribution`, `get_executive_metrics`) that allow the AI agent to query the attribution matrix deterministically with zero mathematical hallucination.
 * **⚡ Instant Interactive Sandbox Demo:** Preloaded with 90 days of realistic DTC e-commerce orders, customer journeys, Meta/TikTok ad spend, and multi-touch attribution. Launch immediately without external credentials via `?demo=true`.
 * **🎯 Granular Ad Creative & Campaign Discrepancy Engine:** Isolates true first-party incremental conversions from ad platform over-reporting at both the campaign container and individual ad creative variation level.
@@ -18,9 +18,14 @@
 
 The AI Copilot operates on an agentic architecture:
 - **System Context Layer:** Injects real-time brand configuration, localization currency, active date boundaries, and data source health.
+- **Multi-Model Inference:** 
+  - **`mistral-large-2512`:** Flagship reasoning agent for interactive media-buyer strategic audits and tool-calling.
+  - **`codestral-2508`:** High-precision data ledger math, schema exploration, and causal regression code generation.
+  - **`ministral-14b-2512`:** Deep multi-page CFO Board Audit PDF report generation.
+  - **`ministral-8b-2512`:** Sub-second edge directives and real-time capital allocation alerts.
 - **Deterministic Tool-Calling:** Connects directly into local IndexedDB and cloud PostgreSQL/D1 tables through structured tool definitions.
 - **Causal Reasoning Engine:** Translates raw conversion deltas and view-through overlap into plain-English marketing strategy for founders and media buyers.
-- **Dual Inference Modes:** Works out-of-the-box in zero-API-key demo mode via deterministic local query parsing, or connects to live Google Gemma/Gemini API keys for unbounded conversational analysis.
+- **Dual Inference Modes:** Works out-of-the-box in zero-API-key demo mode via deterministic local query parsing, or connects to live Mistral API keys for unbounded conversational analysis.
 
 ---
 

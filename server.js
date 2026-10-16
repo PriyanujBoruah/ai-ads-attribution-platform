@@ -652,7 +652,7 @@ const server = http.createServer((req, res) => {
     req.on('end', () => {
       try {
         const payload = JSON.parse(body);
-        const { messages, model } = payload;
+        const { messages, model, tools, tool_choice, temperature } = payload;
 
         if (!messages) {
           sendJsonError(res, 400, 'Missing messages array in request body.');
@@ -660,13 +660,22 @@ const server = http.createServer((req, res) => {
         }
 
         const mistralUrl = 'https://api.mistral.ai/v1/chat/completions';
-        const mistralKey = process.env.MISTRAL_API_KEY || '';
+        const clientAuth = req.headers['authorization'];
+        const mistralKey = (clientAuth ? clientAuth.replace(/^Bearer\s+/i, '') : '') || process.env.MISTRAL_API_KEY || '';
 
-        const postData = JSON.stringify({
-          model: model || 'mistral-small-2506',
+        const mistralPayload = {
+          model: model || 'ministral-8b-2512',
           messages: messages,
-          temperature: 0.2
-        });
+          temperature: temperature !== undefined ? temperature : 0.2
+        };
+        if (tools) {
+          mistralPayload.tools = tools;
+        }
+        if (tool_choice) {
+          mistralPayload.tool_choice = tool_choice;
+        }
+
+        const postData = JSON.stringify(mistralPayload);
 
         const options = {
           method: 'POST',

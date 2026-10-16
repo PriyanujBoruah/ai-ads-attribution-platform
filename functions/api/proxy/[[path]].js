@@ -342,6 +342,44 @@ export async function onRequest(context) {
       });
     }
 
+    // Mistral AI Chat Completion Proxy
+    if (pathname === "/api/proxy/mistral" && request.method === "POST") {
+      const body = await request.json();
+      const { messages, model, tools, tool_choice, temperature } = body;
+      if (!messages) {
+        return jsonError(400, "Missing messages array in request body.");
+      }
+      const clientAuth = request.headers.get("Authorization");
+      const mistralKey = (clientAuth ? clientAuth.replace(/^Bearer\s+/i, "") : "") || env.MISTRAL_API_KEY;
+      if (!mistralKey) {
+        return jsonError(401, "No Mistral API key configured. Provide Authorization header or set MISTRAL_API_KEY.");
+      }
+      const mistralPayload = {
+        model: model || "ministral-8b-2512",
+        messages,
+        temperature: temperature !== undefined ? temperature : 0.2
+      };
+      if (tools) mistralPayload.tools = tools;
+      if (tool_choice) mistralPayload.tool_choice = tool_choice;
+
+      const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${mistralKey}`
+        },
+        body: JSON.stringify(mistralPayload)
+      });
+      const responseBody = await response.text();
+      return new Response(responseBody, {
+        status: response.status,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*"
+        }
+      });
+    }
+
     // Proxy health check status
     if (pathname === "/api/proxy/status" && request.method === "GET") {
       return new Response(JSON.stringify({ status: "online" }), {
