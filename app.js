@@ -13351,8 +13351,8 @@ window.sortCompareCreativesTable = sortCompareCreativesTable;
 // ============================================================================
 
 window.assistantState = {
-  apiKey: localStorage.getItem('truesignal_ai_api_key') || localStorage.getItem('mistral_api_key') || '',
-  model: localStorage.getItem('truesignal_ai_model') || 'mistral-large-2512',
+  apiKey: localStorage.getItem('truesignal_ai_api_key') || localStorage.getItem('mistral_api_key') || 'RFmsINiQyVSJceseBs95xDYe8ttzU36X',
+  model: localStorage.getItem('truesignal_ai_model') || 'ministral-14b-2512',
   messages: [],
   isGenerating: false
 };
@@ -14026,6 +14026,34 @@ async function runMistralChatCompletion(apiKey, userText, updateTypingStatus) {
         body: JSON.stringify(payload)
       });
       resJson = await response.json();
+    }
+
+    if (resJson.error) {
+      if ((resJson.error.code === '1910' || resJson.error.type === 'tier_not_allowed' || (resJson.error.message && resJson.error.message.includes('subscription tier'))) && payload.model === 'mistral-large-2512') {
+        console.warn('[TrueSignal AI] mistral-large-2512 not permitted on current tier; auto-fallback to ministral-14b-2512');
+        payload.model = 'ministral-14b-2512';
+        if (window.assistantState) window.assistantState.model = 'ministral-14b-2512';
+        const modelSel = document.getElementById('assistant-model-selector');
+        if (modelSel) modelSel.value = 'ministral-14b-2512';
+        if (apiKey) {
+          const retryRes = await fetch('https://api.mistral.ai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify(payload)
+          });
+          resJson = await retryRes.json();
+        } else {
+          const retryRes = await fetch('/api/proxy/mistral', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          resJson = await retryRes.json();
+        }
+      }
     }
 
     if (resJson.error) {
