@@ -13379,8 +13379,8 @@ window.sortCompareCreativesTable = sortCompareCreativesTable;
 // ============================================================================
 
 window.assistantState = {
-  apiKey: localStorage.getItem('truesignal_ai_api_key') || localStorage.getItem('mistral_api_key') || 'RFmsINiQyVSJceseBs95xDYe8ttzU36X',
-  model: localStorage.getItem('truesignal_ai_model') || 'ministral-14b-2512',
+  apiKey: (typeof window !== 'undefined' && window.PLATFORM_CONFIG && window.PLATFORM_CONFIG.mistral && window.PLATFORM_CONFIG.mistral.apiKey) || localStorage.getItem('truesignal_ai_api_key') || localStorage.getItem('mistral_api_key') || 'RFmsINiQyVSJceseBs95xDYe8ttzU36X',
+  model: localStorage.getItem('truesignal_ai_model') || (typeof window !== 'undefined' && window.PLATFORM_CONFIG && window.PLATFORM_CONFIG.mistral && window.PLATFORM_CONFIG.mistral.defaultModel) || 'ministral-14b-2512',
   messages: [],
   isGenerating: false
 };
