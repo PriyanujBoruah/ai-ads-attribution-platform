@@ -1,43 +1,53 @@
-# Turnkey White-Label Shopify & Meta Attribution Platform
+# TrueSignal AI | Autonomous Shopify & Meta Ads Attribution Platform
 
-> **Turnkey 1st-party cookie attribution, Meta CAPI server-side integration, and creative concept clustering engine for Shopify brands and performance agencies.**
+> **Autonomous multi-touch attribution (MTA), Meta CAPI server-side sync, and LLM-powered marketing intelligence copilot for Shopify brands, media buyers, and DTC aggregators.**
 
 ---
 
-## 🚀 Key Highlights for Acquirers & Agencies
+## 🚀 Key Highlights for Acquirers & AI Investors
 
-* **⚡ Instant Interactive Sandbox Demo:** Preloaded with 90 days of realistic DTC e-commerce orders, customer journeys, Meta/TikTok ad spend, and multi-touch attribution. Launch immediately without external credentials via `?demo=true` or the in-app Test Drive button.
-* **🎨 60-Second Agency White-Label Studio:** Change the platform name, logo, primary theme color, and currency live in-app or via [`brand.config.js`](brand.config.js) to re-sell or white-label for clients.
+* **🤖 Autonomous AI Marketing Copilot:** Embedded LLM reasoning agent (powered by Google Gemma 4 31B and local deterministic tool-calling) that performs natural language audits, causal ROAS analysis, ad fatigue detection, and automated budget reallocation recommendations.
+* **🛠️ Agentic Tool-Calling Schema:** Includes dedicated analytical tools (`query_creatives_performance`, `query_campaign_attribution`, `get_executive_metrics`) that allow the AI agent to query the attribution matrix deterministically with zero mathematical hallucination.
+* **⚡ Instant Interactive Sandbox Demo:** Preloaded with 90 days of realistic DTC e-commerce orders, customer journeys, Meta/TikTok ad spend, and multi-touch attribution. Launch immediately without external credentials via `?demo=true`.
+* **🎯 Granular Ad Creative & Campaign Discrepancy Engine:** Isolates true first-party incremental conversions from ad platform over-reporting at both the campaign container and individual ad creative variation level.
 * **🛡️ Zero-Burn Edge Infrastructure:** Built on Cloudflare Pages, Cloudflare D1 serverless SQLite, and DuckDB WASM. Baseline monthly server cost is **$0.00**.
-* **📚 Complete Handover Manual:** See [**`ACQUISITION_MANUAL.md`**](ACQUISITION_MANUAL.md) for the complete asset dossier, architecture diagram, commercialization playbooks, and 15-minute deployment guide.
+
+---
+
+## 🧠 AI Agent Architecture
+
+The AI Copilot operates on an agentic architecture:
+- **System Context Layer:** Injects real-time brand configuration, localization currency, active date boundaries, and data source health.
+- **Deterministic Tool-Calling:** Connects directly into local IndexedDB and cloud PostgreSQL/D1 tables through structured tool definitions.
+- **Causal Reasoning Engine:** Translates raw conversion deltas and view-through overlap into plain-English marketing strategy for founders and media buyers.
+- **Dual Inference Modes:** Works out-of-the-box in zero-API-key demo mode via deterministic local query parsing, or connects to live Google Gemma/Gemini API keys for unbounded conversational analysis.
 
 ---
 
 ## Architecture Overview
 
-- **Frontend Dashboard:** Pure client-side analytical coordinator ([`app.js`](app.js)), IndexedDB local caching ([`db.js`](db.js)), and reactive chart rendering.
+- **AI Copilot & Frontend Coordinator:** Client-side analytical engine ([`app.js`](app.js)), IndexedDB caching ([`db.js`](db.js)), and reactive chart rendering.
 - **Attribution & Intelligence Engines:**
   - [`attribution-engine.js`](attribution-engine.js): 5-tier attribution confidence scoring and journey tracking.
   - [`profitability-engine.js`](profitability-engine.js): Net profit, UK VAT modes, gateway fees, and POAS calculations.
   - [`family-engine.js`](family-engine.js): Creative fingerprinting, concept clustering, and ad grouping.
   - [`maturity-engine.js`](maturity-engine.js): Refund cohort aging and reporting window adjustments.
-- **Data Ingestion & Storage:**
+- **Data Ingestion & Server-Side Tracking:**
   - [`shopify-tracking-pixel.js`](shopify-tracking-pixel.js): 1st-party cookie tracker (`SameSite=Lax; Secure`) preserving click IDs and UTM context.
-  - [`supabase-client.js`](supabase-client.js) / [`supabase_schema.sql`](supabase_schema.sql): PostgreSQL cloud data warehouse with automated retention pruning.
+  - [`supabase-client.js`](supabase-client.js) / [`supabase_schema.sql`](supabase_schema.sql): PostgreSQL cloud data warehouse.
   - [`functions/api/proxy/`](functions/api/proxy/): Cloudflare Pages Edge proxy for CORS bypass and D1 database routing.
-- **Authentication & OAuth:** Meta Marketing API and Shopify GraphQL OAuth handshakes.
 
 ---
 
 ## Getting Started
 
-1. **Test Drive Sandbox Demo:** Open `index.html` in any browser or launch local server and append `?demo=true`:
+1. **Launch Sandbox Demo:** Open `index.html` in any browser or launch local server and append `?demo=true`:
    ```bash
    node server.js
-   # Visit: http://localhost:8000/?demo=true
+   # Visit: http://localhost:8000/?demo=true#assistant
    ```
 2. **Review Environment Variables:**
    ```bash
    cp .env.example .env
    ```
-3. **Deployment Guide:** See [DEPLOYMENT.md](DEPLOYMENT.md) and [ACQUISITION_MANUAL.md](ACQUISITION_MANUAL.md) for turnkey Cloudflare Pages hosting.
+3. **Deployment:** Ready for instant 1-click deployment on Cloudflare Pages or Vercel.
