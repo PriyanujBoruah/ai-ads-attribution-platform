@@ -1672,7 +1672,7 @@ function generateRawDayMetrics(date, dayIndex) {
       
       const session = {
         sessionId,
-        campaign: ch.spend > 0 ? `${ch.name}_Conversion_Campaign` : 'Direct_Traffic',
+        campaign: ch.name === 'Meta' ? (Math.random() < 0.52 ? 'UK_PROSPECTING_AEROSPIKE_CAROUSEL' : (Math.random() < 0.65 ? 'UK_RETARGETING_CARBON_TEE' : 'UK_LOOKALIKE_PURCHASE_LAL_1%')) : (ch.spend > 0 ? `${ch.name}_Conversion_Campaign` : 'Direct_Traffic'),
         clickId
       };
       rawSessions.push(session);
