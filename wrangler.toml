@@ -1,0 +1,8 @@
+name = "truesignal-app"
+compatibility_date = "2026-04-01"
+pages_build_output_dir = "./"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "truesignal-db"
+database_id = "c7d397e1-86d4-4eeb-83af-911e323f62b5"

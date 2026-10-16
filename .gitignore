@@ -1,0 +1,18 @@
+# Environment variables and credentials
+.env
+.env.local
+*.local
+
+# Dependencies
+node_modules/
+
+# Cloudflare & Wrangler cache
+.wrangler/
+
+# Scratch & temporary files
+scratch/
+*.log
+
+# OS metadata
+.DS_Store
+Thumbs.db
