@@ -2599,7 +2599,7 @@ function setSpendViewMode(mode) {
 }
 
 function switchView(viewName, pushState = true) {
-  const views = ['overview', 'campaign-overview', 'creatives', 'campaigns', 'visuals', 'compare-creatives', 'assistant', 'sources', 'webhooks'];
+  const views = ['overview', 'campaign-overview', 'creatives', 'campaigns', 'visuals', 'compare-creatives', 'assistant', 'sources', 'webhooks', 'whitelabel'];
   const normalizedView = views.includes(viewName) ? viewName : 'overview';
   
   views.forEach(v => {
@@ -2638,7 +2638,8 @@ function switchView(viewName, pushState = true) {
     'compare-creatives': 'Creative Comparison & Benchmark Engine',
     assistant: 'TrueSignal AI Assistant',
     sources: 'Data Sources & Ingestion',
-    webhooks: 'Webhooks & APIs'
+    webhooks: 'Webhooks & APIs',
+    whitelabel: 'Agency White-Label Studio'
   };
 
   const pageTitle = titleMap[normalizedView] || 'TrueSignal';
@@ -2654,7 +2655,8 @@ function switchView(viewName, pushState = true) {
     'compare-creatives': 'Executive Suite > Compare Creatives',
     assistant: 'Executive Suite > Assistant',
     sources: 'Store Connections > Sources',
-    webhooks: 'Webhooks & APIs'
+    webhooks: 'Webhooks & APIs',
+    whitelabel: 'Platform > Agency White-Label Studio'
   };
 
   const breadcrumbPath = breadcrumbMap[normalizedView] || 'Executive Suite > Overview';
@@ -2669,7 +2671,8 @@ function switchView(viewName, pushState = true) {
       'compare-creatives': 'Compare',
       assistant: 'AI Assistant',
       sources: 'CAPI',
-      webhooks: 'Custom Events'
+      webhooks: 'Custom Events',
+      whitelabel: 'Agency White-Label Studio'
     }[normalizedView] || 'Overview > Creative-Level Insights';
     const formattedTitle = rawTitle.replace(/\s*>\s*/g, ' <span style="color: #94a3b8; font-weight: 400;">&gt;</span> ');
     breadcrumbEl.innerHTML = `<span style="color: #0f172a; font-weight: 500;">${formattedTitle}</span>`;
@@ -2693,6 +2696,9 @@ function switchView(viewName, pushState = true) {
 
   if (normalizedView === 'assistant' && typeof renderAssistantTab === 'function') {
     renderAssistantTab();
+  }
+  if (normalizedView === 'whitelabel' && typeof initWhiteLabelView === 'function') {
+    initWhiteLabelView();
   }
 
   // Update browser URL hash and history state for separate-page feel
@@ -13853,10 +13859,16 @@ const WL_PRESETS = {
 let currentWlIcon = '⚡';
 
 function openWhiteLabelModal() {
-  const modal = document.getElementById('whitelabel-modal');
-  if (!modal) return;
-  modal.style.display = 'flex';
+  switchView('whitelabel');
+}
+window.openWhiteLabelModal = openWhiteLabelModal;
 
+function closeWhiteLabelModal() {
+  // Modal converted to full-page dashboard tab; no-op for backward compatibility
+}
+window.closeWhiteLabelModal = closeWhiteLabelModal;
+
+function initWhiteLabelView() {
   const appNameInput = document.getElementById('wl-app-name');
   const agencyNameInput = document.getElementById('wl-agency-name');
   const badgeTextInput = document.getElementById('wl-badge-text');
@@ -13865,12 +13877,24 @@ function openWhiteLabelModal() {
   const currencySelect = document.getElementById('wl-currency');
 
   if (window.BrandConfig) {
-    if (appNameInput) appNameInput.value = window.BrandConfig.brand.appName || 'TrueSignal';
-    if (agencyNameInput) agencyNameInput.value = window.BrandConfig.brand.agencyName || 'TrueSignal Intelligence';
-    if (badgeTextInput) badgeTextInput.value = window.BrandConfig.brand.badgeText || 'PRO';
-    if (colorPicker && window.BrandConfig.theme.primaryColor) colorPicker.value = window.BrandConfig.theme.primaryColor;
-    if (colorHex && window.BrandConfig.theme.primaryColor) colorHex.value = window.BrandConfig.theme.primaryColor;
-    if (currencySelect && window.BrandConfig.localization.defaultCurrency) currencySelect.value = window.BrandConfig.localization.defaultCurrency;
+    if (appNameInput && window.BrandConfig.brand && window.BrandConfig.brand.appName) {
+      appNameInput.value = window.BrandConfig.brand.appName;
+    }
+    if (agencyNameInput && window.BrandConfig.brand && window.BrandConfig.brand.agencyName) {
+      agencyNameInput.value = window.BrandConfig.brand.agencyName;
+    }
+    if (badgeTextInput && window.BrandConfig.brand && window.BrandConfig.brand.badgeText) {
+      badgeTextInput.value = window.BrandConfig.brand.badgeText;
+    }
+    if (colorPicker && window.BrandConfig.theme && window.BrandConfig.theme.primaryColor) {
+      colorPicker.value = window.BrandConfig.theme.primaryColor;
+    }
+    if (colorHex && window.BrandConfig.theme && window.BrandConfig.theme.primaryColor) {
+      colorHex.value = window.BrandConfig.theme.primaryColor;
+    }
+    if (currencySelect && window.BrandConfig.localization && window.BrandConfig.localization.defaultCurrency) {
+      currencySelect.value = window.BrandConfig.localization.defaultCurrency;
+    }
   }
 
   // Sync icon from sidebar if present
@@ -13881,19 +13905,13 @@ function openWhiteLabelModal() {
 
   updateWlLivePreview();
 }
-window.openWhiteLabelModal = openWhiteLabelModal;
-
-function closeWhiteLabelModal() {
-  const modal = document.getElementById('whitelabel-modal');
-  if (modal) modal.style.display = 'none';
-}
-window.closeWhiteLabelModal = closeWhiteLabelModal;
+window.initWhiteLabelView = initWhiteLabelView;
 
 // Keyboard listener: Escape closes White-Label modal
 if (typeof window !== 'undefined') {
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      closeWhiteLabelModal();
+      // closeWhiteLabelModal();
     }
   });
 }
