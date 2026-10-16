@@ -2958,3 +2958,46 @@ body.view-assistant-active #site-footer {
   overscroll-behavior: contain !important;
 }
 
+/* ==========================================================================
+   Sidebar Minimized State Adjustments (Studio Text & AI Copilot Icon)
+   ========================================================================== */
+.sidebar.collapsed .sidebar-badge-studio {
+  display: none !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.sidebar.collapsed #nav-assistant .ai-copilot-icon,
+.sidebar.collapsed #nav-assistant svg {
+  display: none !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  visibility: hidden !important;
+}
+
+.sidebar.collapsed #nav-assistant > div {
+  justify-content: center !important;
+  width: 100% !important;
+}
+
+.sidebar.collapsed #nav-assistant .sidebar-badge-ai {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  letter-spacing: 0.5px !important;
+  box-shadow: 0 1px 4px rgba(99, 102, 241, 0.3) !important;
+  margin: 0 auto !important;
+  line-height: 1 !important;
+}
+
+
