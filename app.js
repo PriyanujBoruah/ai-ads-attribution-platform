@@ -13806,6 +13806,52 @@ window.sendAssistantMessage = sendAssistantMessage;
 window.executeAssistantTool = executeAssistantTool;
 
 // --- AGENCY WHITE-LABEL STUDIO CONTROLLER ---
+
+const WL_PRESETS = {
+  truesignal: {
+    appName: 'TrueSignal',
+    agencyName: 'TrueSignal Intelligence',
+    badgeText: 'PRO',
+    icon: '⚡',
+    color: '#4338ca',
+    currency: 'GBP'
+  },
+  apex: {
+    appName: 'Apex Attribution',
+    agencyName: 'Apex Performance Media',
+    badgeText: 'ENTERPRISE',
+    icon: '🚀',
+    color: '#2563eb',
+    currency: 'USD'
+  },
+  verdant: {
+    appName: 'Verdant Scale',
+    agencyName: 'Verdant DTC Growth Agency',
+    badgeText: 'AGENCY PRO',
+    icon: '📈',
+    color: '#059669',
+    currency: 'EUR'
+  },
+  nexus: {
+    appName: 'Nexus CAPI Studio',
+    agencyName: 'Nexus Marketing Lab',
+    badgeText: 'PROPRIETARY',
+    icon: '💎',
+    color: '#7c3aed',
+    currency: 'USD'
+  },
+  obsidian: {
+    appName: 'Obsidian Analytics',
+    agencyName: 'Obsidian Capital Partners',
+    badgeText: 'CONFIDENTIAL',
+    icon: '🛡️',
+    color: '#0f172a',
+    currency: 'USD'
+  }
+};
+
+let currentWlIcon = '⚡';
+
 function openWhiteLabelModal() {
   const modal = document.getElementById('whitelabel-modal');
   if (!modal) return;
@@ -13813,6 +13859,7 @@ function openWhiteLabelModal() {
 
   const appNameInput = document.getElementById('wl-app-name');
   const agencyNameInput = document.getElementById('wl-agency-name');
+  const badgeTextInput = document.getElementById('wl-badge-text');
   const colorPicker = document.getElementById('wl-color-picker');
   const colorHex = document.getElementById('wl-color-hex');
   const currencySelect = document.getElementById('wl-currency');
@@ -13820,10 +13867,19 @@ function openWhiteLabelModal() {
   if (window.BrandConfig) {
     if (appNameInput) appNameInput.value = window.BrandConfig.brand.appName || 'TrueSignal';
     if (agencyNameInput) agencyNameInput.value = window.BrandConfig.brand.agencyName || 'TrueSignal Intelligence';
+    if (badgeTextInput) badgeTextInput.value = window.BrandConfig.brand.badgeText || 'PRO';
     if (colorPicker && window.BrandConfig.theme.primaryColor) colorPicker.value = window.BrandConfig.theme.primaryColor;
     if (colorHex && window.BrandConfig.theme.primaryColor) colorHex.value = window.BrandConfig.theme.primaryColor;
     if (currencySelect && window.BrandConfig.localization.defaultCurrency) currencySelect.value = window.BrandConfig.localization.defaultCurrency;
   }
+
+  // Sync icon from sidebar if present
+  const symbolEl = document.getElementById('sidebar-logo-symbol');
+  if (symbolEl && symbolEl.textContent) {
+    currentWlIcon = symbolEl.textContent.trim() || '⚡';
+  }
+
+  updateWlLivePreview();
 }
 window.openWhiteLabelModal = openWhiteLabelModal;
 
@@ -13833,24 +13889,199 @@ function closeWhiteLabelModal() {
 }
 window.closeWhiteLabelModal = closeWhiteLabelModal;
 
-function setWlPresetColor(color) {
-  const picker = document.getElementById('wl-color-picker');
-  const hex = document.getElementById('wl-color-hex');
-  if (picker) picker.value = color;
-  if (hex) hex.value = color;
+// Keyboard listener: Escape closes White-Label modal
+if (typeof window !== 'undefined') {
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeWhiteLabelModal();
+    }
+  });
 }
-window.setWlPresetColor = setWlPresetColor;
+
+function selectWlPreset(presetKey) {
+  const p = WL_PRESETS[presetKey];
+  if (!p) return;
+
+  const appNameInput = document.getElementById('wl-app-name');
+  const agencyNameInput = document.getElementById('wl-agency-name');
+  const badgeTextInput = document.getElementById('wl-badge-text');
+  const colorPicker = document.getElementById('wl-color-picker');
+  const colorHex = document.getElementById('wl-color-hex');
+  const currencySelect = document.getElementById('wl-currency');
+
+  if (appNameInput) appNameInput.value = p.appName;
+  if (agencyNameInput) agencyNameInput.value = p.agencyName;
+  if (badgeTextInput) badgeTextInput.value = p.badgeText;
+  if (colorPicker) colorPicker.value = p.color;
+  if (colorHex) colorHex.value = p.color;
+  if (currencySelect) currencySelect.value = p.currency;
+
+  selectWlIcon(p.icon);
+
+  // Update preset active button style
+  document.querySelectorAll('.wl-preset-btn').forEach(btn => btn.classList.remove('active'));
+  const clicked = event ? event.currentTarget : null;
+  if (clicked) clicked.classList.add('active');
+
+  updateWlLivePreview();
+}
+window.selectWlPreset = selectWlPreset;
+
+function selectWlIcon(icon) {
+  currentWlIcon = icon;
+  document.querySelectorAll('.wl-icon-btn').forEach(btn => {
+    if (btn.textContent.trim() === icon) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+  updateWlLivePreview();
+}
+window.selectWlIcon = selectWlIcon;
+
+function updateWlLivePreview() {
+  const appName = (document.getElementById('wl-app-name')?.value || 'TrueSignal').trim();
+  const agencyName = (document.getElementById('wl-agency-name')?.value || 'TrueSignal Intelligence').trim();
+  const badgeText = (document.getElementById('wl-badge-text')?.value || 'PRO').trim();
+  const color = (document.getElementById('wl-color-hex')?.value || '#4338ca').trim();
+  const curr = document.getElementById('wl-currency')?.value || 'GBP';
+
+  const symMap = { GBP: '£', USD: '$', EUR: '€', CAD: 'C$', AUD: 'A$' };
+  const sym = symMap[curr] || '£';
+
+  // Preview elements
+  const prevIconSymbol = document.getElementById('prev-icon-symbol');
+  const prevIconBox = document.getElementById('prev-icon-box');
+  const prevAppName = document.getElementById('prev-app-name');
+  const prevAgencyName = document.getElementById('prev-agency-name');
+  const prevBadge = document.getElementById('prev-badge');
+  const prevRevenue = document.getElementById('prev-revenue');
+  const prevAccentDot = document.getElementById('prev-accent-dot');
+  const prevBtn = document.getElementById('prev-btn');
+  const applyBtn = document.getElementById('wl-apply-btn');
+
+  if (prevIconSymbol) prevIconSymbol.textContent = currentWlIcon;
+  if (prevIconBox) {
+    prevIconBox.style.background = color;
+    prevIconBox.style.boxShadow = `0 2px 6px ${color}40`;
+  }
+  if (prevAppName) prevAppName.textContent = appName;
+  if (prevAgencyName) prevAgencyName.textContent = agencyName;
+  if (prevBadge) {
+    prevBadge.textContent = badgeText;
+    prevBadge.style.color = color;
+    prevBadge.style.background = `${color}18`;
+  }
+  if (prevRevenue) prevRevenue.textContent = `${sym}42,850.00`;
+  if (prevAccentDot) prevAccentDot.style.background = color;
+  if (prevBtn) {
+    prevBtn.style.background = color;
+    prevBtn.style.boxShadow = `0 2px 8px ${color}40`;
+  }
+  if (applyBtn) {
+    applyBtn.style.background = color;
+    applyBtn.style.boxShadow = `0 2px 8px ${color}40`;
+  }
+}
+window.updateWlLivePreview = updateWlLivePreview;
+
+function copyWlConfigCode() {
+  const appName = (document.getElementById('wl-app-name')?.value || 'TrueSignal').trim();
+  const agencyName = (document.getElementById('wl-agency-name')?.value || 'TrueSignal Intelligence').trim();
+  const badgeText = (document.getElementById('wl-badge-text')?.value || 'PRO').trim();
+  const primaryColor = (document.getElementById('wl-color-hex')?.value || '#4338ca').trim();
+  const currency = document.getElementById('wl-currency')?.value || 'GBP';
+  const symMap = { GBP: '£', USD: '$', EUR: '€', CAD: 'C$', AUD: 'A$' };
+  const currencySymbol = symMap[currency] || '£';
+
+  const codeSnippet = `// Production brand.config.js for ${appName}
+const BrandConfig = {
+  brand: {
+    appName: "${appName}",
+    agencyName: "${agencyName}",
+    tagline: "Causal Attribution & Creative Engine",
+    badgeText: "${badgeText}"
+  },
+  theme: {
+    primaryColor: "${primaryColor}",
+    primaryHover: "${primaryColor}",
+    accentGradient: "linear-gradient(135deg, ${primaryColor} 0%, #6366f1 100%)",
+    glowEffect: "${primaryColor}26"
+  },
+  localization: {
+    defaultCurrency: "${currency}",
+    currencySymbol: "${currencySymbol}"
+  }
+};`;
+
+  navigator.clipboard.writeText(codeSnippet).then(() => {
+    const textEl = document.getElementById('wl-copy-code-text');
+    if (textEl) {
+      const orig = textEl.textContent;
+      textEl.textContent = '✓ Copied to Clipboard!';
+      textEl.style.color = '#059669';
+      setTimeout(() => {
+        textEl.textContent = orig;
+        textEl.style.color = '';
+      }, 2000);
+    }
+    showToastNotification('brand.config.js copied to clipboard! Ready to paste into your repo.');
+  }).catch(() => {
+    prompt('Copy your custom brand.config.js snippet:', codeSnippet);
+  });
+}
+window.copyWlConfigCode = copyWlConfigCode;
+
+function showToastNotification(message, icon = '✨') {
+  let toast = document.getElementById('whitelabel-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'whitelabel-toast';
+    toast.style.position = 'fixed';
+    toast.style.bottom = '24px';
+    toast.style.right = '24px';
+    toast.style.background = '#0f172a';
+    toast.style.color = '#ffffff';
+    toast.style.padding = '12px 18px';
+    toast.style.borderRadius = '12px';
+    toast.style.fontSize = '12.5px';
+    toast.style.fontWeight = '600';
+    toast.style.boxShadow = '0 12px 28px -4px rgba(15, 23, 42, 0.35)';
+    toast.style.zIndex = '100000';
+    toast.style.display = 'flex';
+    toast.style.alignItems = 'center';
+    toast.style.gap = '10px';
+    toast.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+    toast.style.transition = 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+    document.body.appendChild(toast);
+  }
+
+  toast.innerHTML = `<span style="font-size: 16px;">${icon}</span><span>${message}</span>`;
+  toast.style.opacity = '1';
+  toast.style.transform = 'translateY(0) scale(1)';
+
+  if (window.wlToastTimer) clearTimeout(window.wlToastTimer);
+  window.wlToastTimer = setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(12px) scale(0.95)';
+  }, 3500);
+}
+window.showToastNotification = showToastNotification;
 
 function applyWhiteLabelLive() {
-  const appName = document.getElementById('wl-app-name').value.trim() || 'TrueSignal';
-  const agencyName = document.getElementById('wl-agency-name').value.trim() || 'TrueSignal Intelligence';
-  const primaryColor = document.getElementById('wl-color-hex').value.trim() || '#4338ca';
-  const currency = document.getElementById('wl-currency').value || 'GBP';
+  const appName = (document.getElementById('wl-app-name')?.value || 'TrueSignal').trim();
+  const agencyName = (document.getElementById('wl-agency-name')?.value || 'TrueSignal Intelligence').trim();
+  const badgeText = (document.getElementById('wl-badge-text')?.value || 'PRO').trim();
+  const primaryColor = (document.getElementById('wl-color-hex')?.value || '#4338ca').trim();
+  const currency = document.getElementById('wl-currency')?.value || 'GBP';
+  const symMap = { GBP: '£', USD: '$', EUR: '€', CAD: 'C$', AUD: 'A$' };
+  const currencySymbol = symMap[currency] || '£';
 
   const newConfig = {
-    brand: { appName, agencyName },
+    brand: { appName, agencyName, badgeText },
     theme: { primaryColor, primaryHover: primaryColor },
-    localization: { defaultCurrency: currency }
+    localization: { defaultCurrency: currency, currencySymbol }
   };
 
   localStorage.setItem('TRUESIGNAL_BRAND_CONFIG', JSON.stringify(newConfig));
@@ -13861,20 +14092,53 @@ function applyWhiteLabelLive() {
     Object.assign(window.BrandConfig.localization, newConfig.localization);
   }
 
+  // Update root CSS custom properties
   document.documentElement.style.setProperty('--primary', primaryColor);
   document.documentElement.style.setProperty('--primary-glow', primaryColor + '26');
 
+  // Update live sidebar elements
+  const sidebarBrandName = document.getElementById('sidebar-brand-name');
+  if (sidebarBrandName) sidebarBrandName.textContent = appName;
+
+  const sidebarLogoSymbol = document.getElementById('sidebar-logo-symbol');
+  if (sidebarLogoSymbol) sidebarLogoSymbol.textContent = currentWlIcon;
+
+  const sidebarLogoIcon = document.getElementById('sidebar-logo-icon');
+  if (sidebarLogoIcon) {
+    sidebarLogoIcon.style.background = primaryColor;
+    sidebarLogoIcon.style.boxShadow = `0 2px 6px ${primaryColor}40`;
+  }
+
+  const sidebarBrandBadge = document.getElementById('sidebar-brand-badge');
+  if (sidebarBrandBadge) {
+    sidebarBrandBadge.textContent = badgeText;
+    sidebarBrandBadge.style.color = primaryColor;
+  }
+
   document.querySelectorAll('[data-brand="appName"]').forEach(el => el.textContent = appName);
   document.querySelectorAll('[data-brand="agencyName"]').forEach(el => el.textContent = agencyName);
-  document.title = `${appName} — Causal Attribution & Creative Engine`;
+  document.querySelectorAll('[data-brand="badgeText"]').forEach(el => el.textContent = badgeText);
+
+  document.title = `${appName} — Causal Attribution & Creative Intelligence`;
 
   closeWhiteLabelModal();
-  alert(`✨ Rebranding applied successfully!\n\nPlatform Name: ${appName}\nAgency Name: ${agencyName}\nPrimary Theme: ${primaryColor}\nCurrency: ${currency}\n\nAll settings saved to localStorage and brand.config.js format.`);
+
+  // Re-render active view to propagate new currency & theme immediately
+  if (typeof renderCreativesTab === 'function') renderCreativesTab();
+  if (typeof renderCampaignsTab === 'function') renderCampaignsTab();
+  if (typeof renderVisualsTab === 'function' && window.currentView === 'visuals') renderVisualsTab();
+  if (typeof renderCompareCreativesTab === 'function' && window.currentView === 'compare-creatives') renderCompareCreativesTab();
+
+  showToastNotification(`✨ Successfully rebranded as "${appName}" (${primaryColor} • ${currencySymbol})`);
 }
 window.applyWhiteLabelLive = applyWhiteLabelLive;
 
 function resetWhiteLabelDefaults() {
   localStorage.removeItem('TRUESIGNAL_BRAND_CONFIG');
-  location.reload();
+  closeWhiteLabelModal();
+  showToastNotification('Resetting to factory TrueSignal defaults...');
+  setTimeout(() => {
+    location.reload();
+  }, 500);
 }
 window.resetWhiteLabelDefaults = resetWhiteLabelDefaults;
