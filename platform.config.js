@@ -72,13 +72,14 @@ const PLATFORM_CONFIG = {
   // 5. BRANDING, AGENCY IDENTITY & THEME
   // ----------------------------------------------------------------------------
   brand: {
-    appName: "TrueSignal",
-    agencyName: "TrueSignal Intelligence",
-    tagline: "Causal Attribution & Creative Intelligence",
+    appName: "AI Ads Attribution",
+    agencyName: "AI Ads Attribution Platform",
+    tagline: "Autonomous Multi-Touch Attribution & AI Copilot",
     badgeText: "",
     primaryColor: "#4338ca",
     currency: "GBP", // "GBP" | "USD" | "EUR" | "AUD" | "CAD"
-    currencySymbol: "£"
+    currencySymbol: "£",
+    copyrightOwner: "AI Ads Attribution Platform Ltd."
   }
 };
 

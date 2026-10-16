@@ -6,9 +6,9 @@
 const BrandConfig = {
   // 1. Core Brand & Agency Identity
   brand: {
-    appName: "TrueSignal",                              // Software / Platform Name
-    agencyName: "TrueSignal Intelligence",              // Parent Company or Agency Name
-    tagline: "Causal Attribution & Creative Engine",    // Sub-header / Tagline
+    appName: "AI Ads Attribution",                              // Software / Platform Name
+    agencyName: "AI Ads Attribution Platform",              // Parent Company or Agency Name
+    tagline: "Autonomous Multi-Touch Attribution & AI Copilot",    // Sub-header / Tagline
     badgeText: "",                         // Top right pill tag (e.g. "PROPRIETARY ENGINE", "AGENCY PRO", "BETA")
     heroTitleWhite: "Master Creative Attribution &",
     heroTitleGradient: "Concept Intelligence",
@@ -46,13 +46,13 @@ const BrandConfig = {
 
   // Footer metadata
   footer: {
-    copyrightOwner: "TrueSignal Ltd.",
+    copyrightOwner: "AI Ads Attribution Platform Ltd.",
     copyrightYear: new Date().getFullYear(),
-    supportEmail: "support@truesignal.ai",
-    supportDeskUrl: "https://support.truesignal.ai",
-    statusPageUrl: "https://status.truesignal.ai",
-    termsUrl: "https://truesignal.ai/terms",
-    privacyUrl: "https://truesignal.ai/privacy"
+    supportEmail: "support@ai-ads-attribution.com",
+    supportDeskUrl: "https://support.ai-ads-attribution.com",
+    statusPageUrl: "https://status.ai-ads-attribution.com",
+    termsUrl: "https://ai-ads-attribution.com/terms",
+    privacyUrl: "https://ai-ads-attribution.com/privacy"
   }
 };
 
@@ -72,6 +72,7 @@ const BrandConfig = {
       }
       if (pb.currency) BrandConfig.localization.defaultCurrency = pb.currency;
       if (pb.currencySymbol) BrandConfig.localization.currencySymbol = pb.currencySymbol;
+      if (pb.copyrightOwner) BrandConfig.footer.copyrightOwner = pb.copyrightOwner;
     }
 
     const savedConfig = localStorage.getItem('TRUESIGNAL_BRAND_CONFIG');
