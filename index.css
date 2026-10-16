@@ -3000,4 +3000,49 @@ body.view-assistant-active #site-footer {
   line-height: 1 !important;
 }
 
+/* ==========================================================================
+   Assistant Chat Run/Send Button Fix
+   ========================================================================== */
+#assistant-send-btn,
+#assistant-bottom-bar button {
+  padding: 0 !important;
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  max-width: 34px !important;
+  max-height: 34px !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 8px !important;
+  background: #4338ca !important;
+  border: none !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+}
+
+#assistant-send-btn:hover,
+#assistant-bottom-bar button:hover {
+  background: #3730a3 !important;
+}
+
+#assistant-send-btn svg,
+#assistant-bottom-bar button svg {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  max-width: 16px !important;
+  max-height: 16px !important;
+  display: block !important;
+  stroke: #ffffff !important;
+  stroke-width: 2.5px !important;
+  fill: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+
 
