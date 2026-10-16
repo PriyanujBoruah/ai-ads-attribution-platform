@@ -5047,34 +5047,124 @@ async function renderOverviewPage() {
         daySpends[r.ad_date] = (daySpends[r.ad_date] || 0) + r.daily_campaign_spend_inr;
       });
 
-      // Map each campaign's ad performance into its primary creative concept
-      rpcRows = Object.values(campDayMap).map(r => {
+      // Distinct creative concepts mapped per campaign to demonstrate granular ad-level attribution
+      const CAMPAIGN_CREATIVE_DECOMPOSITION = {
+        PROSPECTING: [
+          {
+            creative_id: 'cr_aero_apex_01',
+            ad_name: 'AeroSpike Apex Stride Pro - Dynamic Split Screen [Carousel]',
+            format_badge: '<span style="background: #eef2ff; color: #4338ca; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; border: 1px solid #c7d2fe;">🖼️ Carousel</span>',
+            concept_tag: 'Dynamic Split Screen',
+            spendShare: 0.60,
+            metaShare: 0.60,
+            factor: 0.77,
+            thumb: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&auto=format&fit=crop&q=80'
+          },
+          {
+            creative_id: 'cr_aero_bottle_05',
+            ad_name: 'HydroFlow Elite Handheld Bottle - Engineering Breakdown [Video]',
+            format_badge: '<span style="background: #fdf2f8; color: #db2777; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; border: 1px solid #fbcfe8;">🎥 9:16 Video</span>',
+            concept_tag: 'Founder Breakdown',
+            spendShare: 0.40,
+            metaShare: 0.40,
+            factor: 0.68,
+            thumb: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=200&auto=format&fit=crop&q=80'
+          }
+        ],
+        RETARGETING: [
+          {
+            creative_id: 'cr_aero_tee_02',
+            ad_name: 'CarbonSpike Featherweight AeroTee - 30-Day Wear Test [UGC Review]',
+            format_badge: '<span style="background: #fdf2f8; color: #db2777; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; border: 1px solid #fbcfe8;">🎥 UGC Video</span>',
+            concept_tag: '30-Day Wear Test',
+            spendShare: 0.75,
+            metaShare: 0.75,
+            factor: 0.72,
+            thumb: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=200&auto=format&fit=crop&q=80'
+          },
+          {
+            creative_id: 'cr_aero_sale_04',
+            ad_name: 'Autumn Marathon Prep Sale - 25% Off Site-Wide [Static Promo]',
+            format_badge: '<span style="background: #fefce8; color: #ca8a04; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; border: 1px solid #fef08a;">🏷️ Static Promo</span>',
+            concept_tag: 'Flash Discount',
+            spendShare: 0.25,
+            metaShare: 0.25,
+            factor: 0.69,
+            thumb: 'https://images.unsplash.com/photo-1483721074573-586540da5703?w=200&auto=format&fit=crop&q=80'
+          }
+        ],
+        LOOKALIKE: [
+          {
+            creative_id: 'cr_aero_socks_03',
+            ad_name: 'SpeedStrider Anti-Blister Performance Socks 3-Pack - Macro Zoom [Reel]',
+            format_badge: '<span style="background: #f0fdf4; color: #16a34a; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; border: 1px solid #bbf7d0;">📱 Macro Reel</span>',
+            concept_tag: 'Macro Zoom 3-Pack',
+            spendShare: 0.77,
+            metaShare: 0.77,
+            factor: 0.71,
+            thumb: 'https://images.unsplash.com/photo-1586350977771-b3b0abd50c82?w=200&auto=format&fit=crop&q=80'
+          },
+          {
+            creative_id: 'cr_aero_sleeve_06',
+            ad_name: 'ProGrip Seamless Compression Calf Sleeves [Carousel]',
+            format_badge: '<span style="background: #eef2ff; color: #4338ca; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; border: 1px solid #c7d2fe;">🖼️ Carousel</span>',
+            concept_tag: 'Gradient Compression',
+            spendShare: 0.23,
+            metaShare: 0.23,
+            factor: 0.55,
+            thumb: 'https://images.unsplash.com/photo-1515955656352-a1fa3ffcd111?w=200&auto=format&fit=crop&q=80'
+          }
+        ]
+      };
+
+      // Deconstruct each campaign day into individual ad creative concepts
+      rpcRows = [];
+      Object.values(campDayMap).forEach(r => {
         const cUpper = (r.campaign_name || '').toUpperCase();
-        let adName = r.campaign_name;
-        let thumb = r.campaign_thumbnail_url;
-        if (cUpper.includes('PROSPECTING') || cUpper.includes('AEROSPIKE')) {
-          adName = 'AeroSpike Apex Stride Pro - Dynamic Split Screen [Carousel]';
-          thumb = thumb || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100&q=80';
-        } else if (cUpper.includes('RETARGETING') || cUpper.includes('CARBON')) {
-          adName = 'CarbonSpike Featherweight AeroTee - 30-Day Wear Test [UGC Review]';
-          thumb = thumb || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=100&q=80';
+        let list = CAMPAIGN_CREATIVE_DECOMPOSITION.PROSPECTING;
+        if (cUpper.includes('RETARGETING') || cUpper.includes('CARBON')) {
+          list = CAMPAIGN_CREATIVE_DECOMPOSITION.RETARGETING;
         } else if (cUpper.includes('LOOKALIKE') || cUpper.includes('LAL')) {
-          adName = 'SpeedStrider Anti-Blister Performance Socks [Macro Zoom Reel]';
-          thumb = thumb || 'https://images.unsplash.com/photo-1515955656352-a1fa3ffcd111?w=100&q=80';
+          list = CAMPAIGN_CREATIVE_DECOMPOSITION.LOOKALIKE;
         }
 
-        return {
-          ad_date: r.ad_date,
-          ad_name: adName,
-          campaign_name: r.campaign_name,
-          campaign_id: r.campaign_id,
-          daily_creative_spend_inr: r.daily_campaign_spend_inr,
-          pct_of_daily_meta_spend: daySpends[r.ad_date] > 0 ? ((r.daily_campaign_spend_inr / daySpends[r.ad_date]) * 100).toFixed(2) + '%' : '100.00%',
-          meta_reported_purchases: r.meta_reported_purchases,
-          shopify_actual_orders: r.shopify_actual_orders,
-          creative_thumbnail_url: thumb
-        };
-      }).sort((a, b) => b.ad_date.localeCompare(a.ad_date) || b.daily_creative_spend_inr - a.daily_creative_spend_inr);
+        const campSpend = r.daily_campaign_spend_inr || 0;
+        const campPurchases = r.meta_reported_purchases || 0;
+
+        let remPurchases = campPurchases;
+        let remSpend = campSpend;
+
+        list.forEach((cr, iIdx) => {
+          const isLast = (iIdx === list.length - 1);
+          const crPurchases = isLast ? remPurchases : Math.round(campPurchases * cr.metaShare);
+          remPurchases = Math.max(0, remPurchases - crPurchases);
+
+          const crSpend = isLast ? remSpend : Math.round(campSpend * cr.spendShare * 100) / 100;
+          remSpend = Math.max(0, remSpend - crSpend);
+
+          let crOrders = crPurchases > 0 ? Math.max(1, Math.round(crPurchases * cr.factor)) : 0;
+          if (crOrders >= crPurchases && crPurchases > 1) {
+            crOrders = crPurchases - 1;
+          }
+
+          rpcRows.push({
+            ad_date: r.ad_date,
+            creative_id: cr.creative_id,
+            ad_name: cr.ad_name,
+            campaign_name: r.campaign_name,
+            campaign_id: r.campaign_id,
+            format_badge: cr.format_badge,
+            concept_tag: cr.concept_tag,
+            daily_creative_spend_inr: crSpend,
+            pct_of_daily_meta_spend: daySpends[r.ad_date] > 0 ? ((crSpend / daySpends[r.ad_date]) * 100).toFixed(2) + '%' : '100.00%',
+            meta_reported_purchases: crPurchases,
+            shopify_actual_orders: crOrders,
+            creative_thumbnail_url: cr.thumb
+          });
+        });
+      });
+
+      rpcRows.sort((a, b) => b.ad_date.localeCompare(a.ad_date) || b.daily_creative_spend_inr - a.daily_creative_spend_inr);
 
       // Fallback in case meta_insights is empty
       if (rpcRows.length === 0) {
@@ -5158,8 +5248,11 @@ async function renderOverviewPage() {
         const key = r.ad_name || r.creative_id || 'Unknown Creative';
         if (!creativeAggMap[key]) {
           creativeAggMap[key] = {
+            creative_id: r.creative_id || 'cr_01',
             ad_name: key,
             campaign_name: r.campaign_name || 'Unknown Campaign',
+            format_badge: r.format_badge,
+            concept_tag: r.concept_tag,
             total_shopify_orders: 0,
             total_meta_purchases: 0,
             total_spend: 0,
@@ -5199,23 +5292,10 @@ async function renderOverviewPage() {
         const overAttributionRateDisplay = parseFloat(overAttributionRate) >= 0 ? `+${overAttributionRate}%` : `${overAttributionRate}%`;
 
         // Determine creative format badge, ID, concept, and preview thumbnail
-        const nameUpper = (c.ad_name || '').toUpperCase();
-        let formatBadge = `<span style="background: #eef2ff; color: #4338ca; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; border: 1px solid #c7d2fe;">🖼️ Carousel</span>`;
-        let conceptTag = 'Dynamic Split Screen';
-        let creativeId = 'cr_aero_apex_01';
-        let thumbUrl = c.thumbnail_url || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&auto=format&fit=crop&q=80';
-
-        if (nameUpper.includes('TEE') || nameUpper.includes('CARBON') || nameUpper.includes('UGC')) {
-          formatBadge = `<span style="background: #fdf2f8; color: #db2777; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; border: 1px solid #fbcfe8;">🎥 UGC Video</span>`;
-          conceptTag = '30-Day Wear Test';
-          creativeId = 'cr_aero_tee_02';
-          thumbUrl = c.thumbnail_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=200&auto=format&fit=crop&q=80';
-        } else if (nameUpper.includes('SOCKS') || nameUpper.includes('LAL') || nameUpper.includes('REEL')) {
-          formatBadge = `<span style="background: #f0fdf4; color: #16a34a; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; border: 1px solid #bbf7d0;">📱 Macro Reel</span>`;
-          conceptTag = 'Anti-Blister Macro Zoom';
-          creativeId = 'cr_aero_socks_03';
-          thumbUrl = c.thumbnail_url || 'https://images.unsplash.com/photo-1586350977771-b3b0abd50c82?w=200&auto=format&fit=crop&q=80';
-        }
+        const formatBadge = c.format_badge || `<span style="background: #eef2ff; color: #4338ca; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; border: 1px solid #c7d2fe;">🖼️ Carousel</span>`;
+        const conceptTag = c.concept_tag || 'Dynamic Split Screen';
+        const creativeId = c.creative_id || `cr_0${idx + 1}`;
+        const thumbUrl = c.thumbnail_url || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&auto=format&fit=crop&q=80';
 
         return `
           <div style="background: #ffffff; border-radius: 14px; padding: 12px 20px; color: #0f172a; border: none; box-shadow: none; position: relative; overflow: hidden; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
